@@ -32,8 +32,11 @@ This repository houses the design specifications, branding assets, and codebase 
 safetag/
 ├── 37a24d55-5ffe-4a05-9763-4546f656789b_Website_Redesign__Development_Proposal-1.pdf
 ├── safetag_logo.pdf
+├── web/          # Next.js frontend (homepage with scroll-driven caliper story)
 └── README.md
 ```
+
+See [`web/README.md`](web/README.md) to run the frontend.
 
 ---
 
