@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+/*
+ * SAFETAG design tokens (see project/Design System.dc.html).
+ * Brand green #50C878 is too light for text on white (2.2:1), so text and links
+ * on light surfaces use green-700 #1C7A43; primary buttons are green with ink labels.
+ */
+@theme inline {
+  --color-ink: #0b0f0e;
+  --color-paper: #fafbfa;
+  --color-grid: #eef1f0;
+
+  --color-green-50: #edfaf2;
+  --color-green-200: #a9e7c0;
+  --color-green-400: #66d18b;
+  --color-green-500: #50c878;
+  --color-green-600: #3bae63;
+  --color-green-650: #2a9152;
+  --color-green-700: #1c7a43;
+  --color-green-800: #145a32;
+
+  --color-grey-50: #f4f6f5;
+  --color-grey-100: #ecefee;
+  --color-grey-200: #dadfdd;
+  --color-grey-300: #bcc2c0;
+  --color-grey-400: #929a98;
+  --color-grey-500: #6b7472;
+  --color-grey-600: #4e5755;
+  --color-grey-700: #353c3b;
+  --color-grey-800: #222827;
+  --color-grey-900: #151a19;
+
+  --color-amber: #f2a93b;
+
+  --font-display: var(--font-archivo), "Archivo", sans-serif;
+  --font-sans: var(--font-plex-sans), "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", monospace;
+  --font-lato: var(--font-lato-face), "Lato", sans-serif;
+}
+
+/*
+ * Pinned scroll story. Desktop >= 1100px with motion allowed runs the pinned story;
+ * everything else (and html[data-motion="static"], set for save-data, low-power
+ * devices or when Anime.js fails to load) gets the static fallback.
+ * Usage: static styles are the default, `pinned:` overrides them.
+ */
+@custom-variant pinned {
+  @media (min-width: 1100px) and (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="static"]) & {
+      @slot;
+    }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  a {
+    color: var(--color-green-700);
+  }
+  a:hover {
+    color: var(--color-ink);
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--color-green-700);
+    outline-offset: 3px;
+  }
+  [data-surface="inverse"] *:focus-visible {
+    outline-color: var(--color-green-500);
+  }
+
+  button {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  /* Section eyebrow: "02 · Core services" */
+  .eyebrow {
+    font: 500 12.5px var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-green-700);
+  }
+  /* Small mono label: "ALSO AVAILABLE" */
+  .label-mono {
+    font: 600 11.5px var(--font-mono);
+    letter-spacing: 0.08em;
+    color: var(--color-grey-600);
+  }
+  .display {
+    font-family: var(--font-display);
+    font-stretch: 88%;
+  }
+  .display-92 {
+    font-family: var(--font-display);
+    font-stretch: 92%;
+  }
+  /* Amber "to be confirmed" marker on placeholder facts */
+  .tbc {
+    font: 600 8.5px var(--font-mono);
+    background: var(--color-amber);
+    color: var(--color-ink);
+    padding: 1px 3px;
+    border-radius: 2px;
+    margin-inline-start: 4px;
+  }
+  .grid-paper {
+    background-color: var(--color-paper);
+    background-image:
+      linear-gradient(var(--color-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-property: opacity !important;
+  }
+}
