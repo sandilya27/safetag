@@ -17,7 +17,11 @@ export const metadata: Metadata = {
 // or when forced with ?motion=static (the prototype's "Motion: static" tweak).
 const motionScript = `(function(){try{var n=navigator,c=n.connection;if((c&&c.saveData)||(n.hardwareConcurrency<=4&&n.deviceMemory<=4)||/[?&]motion=static\\b/.test(location.search))document.documentElement.dataset.motion="static"}catch(e){}})()`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en" dir="ltr" className={`${archivo.variable} ${plexSans.variable} ${plexMono.variable} ${lato.variable}`} suppressHydrationWarning>
       <head>
