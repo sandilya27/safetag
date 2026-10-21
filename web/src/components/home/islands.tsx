@@ -1,31 +1,36 @@
 "use client";
 
 // Small interactive pieces of the homepage. Sections themselves stay server components.
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
-import { assistantChips, demoReadout, ringServices, services, testimonials } from "@/lib/content";
+import { assistantChips, contact, demoReadout, ringServices, serviceHref, services, testimonials } from "@/lib/content";
 import { useChat } from "../chat-context";
+import { btnPrimary } from "../ui";
 import { useStory } from "./story-context";
 
-/** Pinned services card: follows the service currently at 3 o’clock on the ring. */
+/** Story services card: follows the service currently at 3 o’clock on the ring. */
 export function ActiveServiceCard() {
   const { active } = useStory();
   const svc = ringServices[active] ?? ringServices[0];
   return (
     <>
-      <div aria-live="polite" className="box-border flex min-h-[210px] flex-col gap-3.5 rounded-md border border-ink bg-white px-7 py-[26px]">
+      <div
+        aria-live="polite"
+        className="box-border flex min-h-[210px] flex-col gap-3.5 rounded-md border border-ink bg-white px-7 py-[26px] docked:min-h-[188px] docked:gap-2.5 docked:px-5 docked:py-5"
+      >
         <div className="flex items-center justify-between">
-          <span className="flex size-11 items-center justify-center rounded bg-green-50">
-            <svc.icon className="size-6 text-green-700" />
+          <span className="flex size-11 items-center justify-center rounded bg-green-50 docked:size-9">
+            <svc.icon className="size-6 text-green-700 docked:size-5" />
           </span>
           <span className="font-mono text-[13px] font-semibold">{String(active + 1).padStart(2, "0")} / 08</span>
         </div>
-        <div className="display-92 text-[28px] leading-[1.12] font-bold">{svc.title}</div>
-        <p className="m-0 text-base leading-[1.55] text-grey-700">{svc.description}</p>
-        <a href="#" className="flex items-center gap-1.5 text-[15px] font-semibold text-green-700 no-underline hover:text-ink">
+        <div className="display-92 text-[28px] leading-[1.12] font-bold docked:text-[22px]">{svc.title}</div>
+        <p className="m-0 text-base leading-[1.55] text-grey-700 docked:line-clamp-3 docked:text-[15px] docked:leading-normal">{svc.description}</p>
+        <Link href={serviceHref(svc)} className="flex items-center gap-1.5 text-[15px] font-semibold text-green-700 no-underline hover:text-ink">
           View service
           <ArrowRight className="size-[15px]" />
-        </a>
+        </Link>
       </div>
       <div className="grid grid-cols-8 gap-1">
         {ringServices.map((s, i) => (
@@ -46,8 +51,8 @@ export function CalibrationReadout() {
   const inTol = Math.abs(dev) <= tolerance;
   const status = live ? (inTol ? "WITHIN TOLERANCE" : "MEASURING") : "STANDBY";
   return (
-    <div data-surface="inverse" className="flex flex-col gap-3.5 rounded-md bg-ink px-6 py-[22px] text-white">
-      <div className="flex items-center justify-between font-mono text-[11.5px] font-semibold tracking-[.08em] text-grey-300">
+    <div data-surface="inverse" className="flex flex-col gap-3.5 rounded-md bg-ink px-6 py-[22px] text-white docked:gap-3 docked:px-5 docked:py-4">
+      <div className="flex items-center justify-between gap-3 font-mono text-[11.5px] font-semibold tracking-[.08em] text-grey-300">
         <span>CALIBRATION RUN · {label}</span>
         <span style={{ color: inTol && live ? "#50C878" : "#F2A93B" }}>{status}</span>
       </div>
@@ -64,7 +69,7 @@ export function CalibrationReadout() {
         </div>
         <div className="flex flex-col">
           <span>DEVIATION</span>
-          <span className="text-[15px] text-white">{live ? `${dev >= 0 ? "+" : "−"}${Math.abs(dev).toFixed(1)}%` : "—"}</span>
+          <span className="text-[15px] text-white tabular-nums">{live ? `${dev >= 0 ? "+" : "−"}${Math.abs(dev).toFixed(1)}%` : "—"}</span>
         </div>
         <div className="flex flex-col">
           <span>TOLERANCE</span>
@@ -76,19 +81,50 @@ export function CalibrationReadout() {
   );
 }
 
-export function VerifyCertificateForm() {
+/**
+ * Certificate lookup. Online verification is an optional phase (proposal §8), so until the
+ * certificate system is connected the form validates the reference and routes it to SAFETAG.
+ */
+export function VerifyCertificateForm({ id = "verify" }: { id?: string }) {
+  const [ref, setRef] = useState("");
+  const [state, setState] = useState<"idle" | "empty" | "sent">("idle");
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setState(ref.trim() ? "sent" : "empty");
+  };
+  const mail = `mailto:${contact.email}?subject=${encodeURIComponent(`Certificate verification: ${ref.trim()}`)}`;
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="flex min-w-[300px] flex-[0_1_380px] flex-col gap-2">
-      <label htmlFor="verify" className="text-sm font-medium text-white">
+    <form id={id} onSubmit={onSubmit} noValidate className="flex min-w-[min(300px,100%)] flex-[0_1_380px] scroll-mt-28 flex-col gap-2">
+      <label htmlFor={`${id}-ref`} className="text-sm font-medium text-white">
         Verify a SAFETAG certificate
       </label>
       <div className="flex gap-2">
         <input
-          id="verify"
+          id={`${id}-ref`}
+          value={ref}
+          onChange={(e) => {
+            setRef(e.target.value);
+            if (state !== "idle") setState("idle");
+          }}
           placeholder="Certificate reference"
-          className="h-12 min-w-0 flex-1 rounded border border-grey-500 bg-grey-900 px-3.5 font-mono text-[15px] text-white outline-none focus:border-green-500 focus:shadow-[0_0_0_3px_#145A32]"
+          autoComplete="off"
+          aria-invalid={state === "empty"}
+          aria-describedby={`${id}-status`}
+          className="h-12 min-w-0 flex-1 rounded border border-grey-500 bg-grey-900 px-3.5 font-mono text-[15px] text-white outline-none placeholder:text-grey-400 focus:border-green-500 focus:shadow-[0_0_0_3px_#145A32] aria-invalid:border-amber"
         />
-        <button className="h-12 cursor-pointer rounded border-[1.5px] border-white bg-transparent px-[18px] text-[15px] font-semibold text-white hover:bg-grey-800">Verify</button>
+        <button className="h-12 cursor-pointer rounded border-[1.5px] border-white bg-transparent px-[18px] text-[15px] font-semibold text-white hover:bg-grey-800 active:translate-y-px">Verify</button>
+      </div>
+      <div id={`${id}-status`} aria-live="polite" className="min-h-5 text-[13.5px] leading-normal text-grey-300">
+        {state === "empty" && <span className="text-amber">Enter the reference printed on the certificate.</span>}
+        {state === "sent" && (
+          <span>
+            Online lookup is not connected yet.{" "}
+            <a href={mail} className="font-semibold text-green-500 hover:text-white">
+              Email us the reference
+            </a>{" "}
+            and we will confirm it.
+          </span>
+        )}
       </div>
     </form>
   );
@@ -98,9 +134,9 @@ export function Testimonials() {
   const [i, setI] = useState(0);
   const t = testimonials[i];
   const n = testimonials.length;
-  const btn = "flex size-12 cursor-pointer items-center justify-center rounded border-[1.5px] border-ink bg-white hover:bg-grey-100";
+  const btn = "flex size-12 cursor-pointer items-center justify-center rounded border-[1.5px] border-ink bg-white hover:bg-grey-100 active:translate-y-px";
   return (
-    <div className="mx-auto grid max-w-[1080px] grid-cols-[repeat(auto-fit,minmax(280px,1fr))] items-start gap-12">
+    <div className="mx-auto grid max-w-[1080px] grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] items-start gap-12">
       <div className="flex flex-col gap-[18px]">
         <div className="eyebrow">07 · Client feedback</div>
         <div className="flex gap-2">
@@ -148,7 +184,9 @@ export function AssistantChips() {
   );
 }
 
+/** First two quote answers; the full form picks them up from the URL. */
 export function QuickQuoteFields() {
+  const [service, setService] = useState(services[0].slug);
   const [loc, setLoc] = useState<"lab" | "site">("lab");
   const radio = (value: "lab" | "site", label: string) => {
     const on = loc === value;
@@ -170,9 +208,15 @@ export function QuickQuoteFields() {
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">Service required</span>
         <div className="relative">
-          <select className="h-12 w-full appearance-none rounded border border-grey-500 bg-grey-900 ps-3.5 pe-10 text-[15px] text-white">
+          <select
+            value={service}
+            onChange={(e) => setService(e.target.value)}
+            className="h-12 w-full appearance-none rounded border border-grey-500 bg-grey-900 ps-3.5 pe-10 text-[15px] text-white"
+          >
             {services.map((s) => (
-              <option key={s.title}>{s.title}</option>
+              <option key={s.slug} value={s.slug}>
+                {s.title}
+              </option>
             ))}
           </select>
           <ChevronDown className="pointer-events-none absolute end-3.5 top-4 size-4 text-white" />
@@ -182,6 +226,10 @@ export function QuickQuoteFields() {
         {radio("lab", "At SAFETAG lab")}
         {radio("site", "On-site")}
       </div>
+      <Link href={`/request-a-quote?service=${service}&location=${loc}`} className={`${btnPrimary} mt-auto h-13 justify-center gap-2.5 text-base hover:bg-green-400`}>
+        Continue to full quote form
+        <ArrowRight className="size-[18px]" />
+      </Link>
     </>
   );
 }

@@ -34,7 +34,7 @@ This repository hosts the complete web redevelopment initiative designed to mode
 - **Dynamic Orbital Service Ring**: Revolves through 8 primary industrial services with synchronized counter-rotation to maintain upright indicators.
 - **Exploded Metrology View**: Deconstructs precision components into distinct analytical callouts during laboratory section walkthroughs.
 - **Real-Time Calibration Sweep**: Animates needle deflection and live digital tolerance readouts (`WITHIN TOLERANCE` / `MEASURING` states) synchronized to scroll velocity.
-- **Adaptive Dual-Mode Engine**: Runs smooth 60fps animations on desktop displays (≥ 1100px) while automatically switching to a lightweight, static fallback for low-power devices, mobile viewports, or users with `prefers-reduced-motion`.
+- **Adaptive Story Modes**: Pinned full-screen stage on desktop (≥ 1100px); on phones and tablets the same caliper docks in a sticky band under the header while the text scrolls beneath it; a lightweight static fallback for low-power devices, short landscape screens, or `prefers-reduced-motion`.
 
 ### 2. 💬 AI-Powered Engineering Inquiry Assistant
 - Embedded smart conversational assistant designed to address client technical queries, explain inspection certifications, and accelerate request-for-quote (RFQ) submissions.

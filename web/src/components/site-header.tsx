@@ -1,23 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
-import { contact, megaGroups, services } from "@/lib/content";
+import { contact, megaGroups, serviceHref, services } from "@/lib/content";
 import { useChat } from "./chat-context";
 import { Logo } from "./logo";
 
 const NAV = [
-  ["Industries", "#industries"],
-  ["Laboratories", "#labs"],
-  ["Certifications", "#certifications"],
-  ["Projects", "#projects"],
-  ["About", "#"],
-  ["Contact", "#footer"],
+  ["Industries", "/industries"],
+  ["Laboratories", "/laboratories"],
+  ["Certifications", "/certifications"],
+  ["Projects", "/projects"],
+  ["About", "/about"],
+  ["Contact", "/contact"],
 ] as const;
 
-const MOBILE_NAV = NAV.filter(([label]) => label !== "About");
+const MOBILE_COMPANY = [...NAV, ["Careers", "/careers"], ["News & Insights", "/news"], ["FAQ", "/faq"]] as const;
 
 const navLink = "flex h-10 items-center rounded px-3 text-[15px] font-medium text-ink no-underline hover:bg-grey-100 hover:text-ink";
+const activeLink = "bg-grey-100 shadow-[inset_0_-2px_0_var(--color-green-500)]";
+
+function NavLinks({ onEnter }: { onEnter: () => void }) {
+  const path = usePathname();
+  return NAV.map(([label, href]) => {
+    const on = path === href || path.startsWith(`${href}/`);
+    return (
+      <Link key={label} href={href} aria-current={on ? "page" : undefined} className={`${navLink} ${on ? activeLink : ""}`} onMouseEnter={onEnter}>
+        {label}
+      </Link>
+    );
+  });
+}
 
 /**
  * Fixed header. Full navigation with the services mega-menu from 1180px; below that,
@@ -36,8 +51,26 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Lock page scroll behind the open drawer.
+  useEffect(() => {
+    if (!nav) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [nav]);
+
   const solid = scrolled || mega || nav;
-  const closeNav = () => setNav(false);
+  const closeAll = () => {
+    setNav(false);
+    setMega(false);
+  };
+  const fallbackLinks = NAV.map(([label, href]) => (
+    <Link key={label} href={href} className={navLink}>
+      {label}
+    </Link>
+  ));
 
   return (
     <header
@@ -45,16 +78,13 @@ export function SiteHeader() {
       style={{ background: solid ? "#FFFFFF" : "rgba(250,251,250,0)", borderColor: solid ? "#DADFDD" : "transparent" }}
       onMouseLeave={() => mega && setMega(false)}
       onKeyDown={(e) => {
-        if (e.key === "Escape") {
-          setMega(false);
-          setNav(false);
-        }
+        if (e.key === "Escape") closeAll();
       }}
     >
-      <div className="mx-auto flex h-18 max-w-[1360px] items-center gap-3 sm:gap-8 px-[clamp(20px,3vw,40px)]">
-        <a href="#" aria-label="SAFETAG home" className="flex flex-none">
+      <div className="mx-auto flex h-18 max-w-[1360px] items-center gap-3 px-[clamp(20px,3vw,40px)] sm:gap-8">
+        <Link href="/" aria-label="SAFETAG home" className="flex flex-none" onClick={closeAll}>
           <Logo className="h-[38px] w-auto" />
-        </a>
+        </Link>
         <nav aria-label="Primary" className="hidden flex-1 items-center gap-0.5 min-[1180px]:flex">
           <button
             type="button"
@@ -67,27 +97,27 @@ export function SiteHeader() {
             Services
             <ChevronDown className="size-3.5 transition-transform duration-200" style={{ transform: `rotate(${mega ? 180 : 0}deg)` }} />
           </button>
-          {NAV.map(([label, href]) => (
-            <a key={label} href={href} className={navLink} onMouseEnter={label === "Industries" ? () => mega && setMega(false) : undefined}>
-              {label}
-            </a>
-          ))}
+          <Suspense fallback={fallbackLinks}>
+            <NavLinks onEnter={() => mega && setMega(false)} />
+          </Suspense>
         </nav>
         <a href={contact.phoneHref} className="hidden font-mono text-sm font-medium whitespace-nowrap text-ink no-underline hover:text-green-700 min-[1180px]:inline">
           {contact.phone}
         </a>
         <div className="ms-auto flex items-center gap-2">
-          <a
-            href="#assistant"
-            className="flex h-11 items-center gap-2 rounded bg-green-500 px-3.5 sm:px-[18px] text-[15px] font-semibold whitespace-nowrap text-ink no-underline transition-colors duration-150 hover:bg-green-600 hover:text-ink active:bg-green-650"
+          <Link
+            href="/request-a-quote"
+            onClick={closeAll}
+            className="flex h-11 items-center gap-2 rounded bg-green-500 px-3.5 text-[15px] font-semibold whitespace-nowrap text-ink no-underline transition-colors duration-150 hover:bg-green-600 hover:text-ink active:bg-green-650 sm:px-[18px]"
           >
             Request a Quote
-          </a>
+          </Link>
           <button
             type="button"
             onClick={() => setNav(!nav)}
-            aria-label="Menu"
+            aria-label={nav ? "Close menu" : "Open menu"}
             aria-expanded={nav}
+            aria-controls="drawer"
             className="flex size-11 cursor-pointer items-center justify-center rounded border border-grey-200 bg-white min-[1180px]:hidden"
           >
             {nav ? <X className="size-5 text-ink" /> : <Menu className="size-5 text-ink" />}
@@ -102,14 +132,15 @@ export function SiteHeader() {
               <div key={g.title} className="flex flex-col gap-1.5">
                 <div className="label-mono px-2.5 pb-2 uppercase">{g.title}</div>
                 {g.items.map((s) => (
-                  <a
+                  <Link
                     key={s.title}
-                    href="#"
+                    href={serviceHref(s)}
+                    onClick={closeAll}
                     className="flex items-center gap-3 rounded px-2.5 py-[9px] text-[15px] font-medium text-ink no-underline hover:bg-green-50 hover:text-green-800"
                   >
                     <s.icon className="size-5 flex-none text-green-700" />
                     {s.title}
-                  </a>
+                  </Link>
                 ))}
               </div>
             ))}
@@ -127,9 +158,9 @@ export function SiteHeader() {
                 >
                   Ask the assistant
                 </button>
-                <a href="#assistant" className="flex h-11 items-center rounded bg-green-500 px-4 text-sm font-semibold text-ink no-underline hover:bg-green-400 hover:text-ink">
-                  Request a Quote
-                </a>
+                <Link href="/services" onClick={closeAll} className="flex h-11 items-center rounded bg-green-500 px-4 text-sm font-semibold text-ink no-underline hover:bg-green-400 hover:text-ink">
+                  All services
+                </Link>
               </div>
             </div>
           </div>
@@ -137,19 +168,19 @@ export function SiteHeader() {
       )}
 
       {nav && (
-        <div className="fixed inset-x-0 top-18 bottom-0 flex flex-col overflow-auto bg-white px-5 pt-4 pb-30 min-[1180px]:hidden">
+        <div id="drawer" className="fixed inset-x-0 top-18 bottom-0 flex flex-col overflow-auto overscroll-contain bg-white px-5 pt-4 pb-30 min-[1180px]:hidden">
           <div className="label-mono py-3">SERVICES</div>
           {services.map((s) => (
-            <a key={s.title} href="#" onClick={closeNav} className="flex min-h-12 items-center gap-3 border-b border-grey-100 text-base font-medium text-ink no-underline">
+            <Link key={s.title} href={serviceHref(s)} onClick={closeAll} className="flex min-h-12 items-center gap-3 border-b border-grey-100 text-base font-medium text-ink no-underline">
               <s.icon className="size-5 flex-none text-green-700" />
               {s.title}
-            </a>
+            </Link>
           ))}
           <div className="label-mono pt-6 pb-3">COMPANY</div>
-          {MOBILE_NAV.map(([label, href]) => (
-            <a key={label} href={href} onClick={closeNav} className="flex min-h-12 items-center border-b border-grey-100 text-lg font-semibold text-ink no-underline">
+          {MOBILE_COMPANY.map(([label, href]) => (
+            <Link key={label} href={href} onClick={closeAll} className="flex min-h-12 items-center border-b border-grey-100 text-lg font-semibold text-ink no-underline">
               {label}
-            </a>
+            </Link>
           ))}
           <a href={contact.phoneHref} className="mt-5 font-mono text-base font-medium text-ink no-underline">
             {contact.phone}
