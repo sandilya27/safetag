@@ -269,6 +269,12 @@
 .kunna--celebrate .kunna-body {
   animation: kunna-hop 0.55s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
+.kunna--walk .kunna-body {
+  animation: kunna-walk 0.42s ease-in-out infinite;
+}
+.kunna--curious .kunna-body {
+  animation: kunna-tilt 2.4s ease-in-out infinite;
+}
 .kunna--thinking .kunna-body {
   animation: kunna-sway 1.6s ease-in-out infinite;
 }
@@ -290,6 +296,22 @@
 }
 .kunna-dot {
   animation: kunna-dot 1s ease-in-out infinite;
+}
+.kunna-thought {
+  animation: kunna-pop 380ms cubic-bezier(0.22, 1, 0.36, 1) 160ms both;
+}
+.kunna-trail i {
+  animation: kunna-pop 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes kunna-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 @keyframes kunna-blink {
   0%,
@@ -329,6 +351,25 @@
   }
   70% {
     transform: translateY(0) scale(1, 1);
+  }
+}
+@keyframes kunna-walk {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(5deg);
+  }
+}
+@keyframes kunna-tilt {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  35%,
+  65% {
+    transform: rotate(8deg);
   }
 }
 @keyframes kunna-sway {
@@ -399,6 +440,10 @@
   .kunna-spark {
     animation: none;
     opacity: 1;
+  }
+  .kunna-thought,
+  .kunna-trail i {
+    animation: none;
   }
   .kunna-eyes {
     transition: none;

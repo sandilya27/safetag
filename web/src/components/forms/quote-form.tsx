@@ -359,7 +359,7 @@ function Summary({ v, files, onEdit }: { v: Values; files: File[]; onEdit: (step
 
 function QuoteSent({ reference, email }: { reference: string; email: string }) {
   return (
-    <div role="status" className="flex flex-col gap-6">
+    <div role="status" data-kunna-done className="flex flex-col gap-6">
       <CheckCircle2 className="size-12 text-green-600" />
       <h2 className="display m-0 text-[clamp(30px,3vw,42px)] leading-[1.05] font-extrabold">Request received.</h2>
       <p className="m-0 max-w-[52ch] text-[17px] leading-[1.6] text-grey-700">

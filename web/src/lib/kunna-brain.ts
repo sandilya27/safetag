@@ -52,6 +52,8 @@ export function answer(q: string): Msg {
     return { from: "bot", text: `You can call ${contact.phone} or email ${contact.email}.`, links: [["Contact page", "/contact"]] };
   if (/lab or on-?site|in the lab|at my site/.test(t))
     return { from: "bot", text: "It depends on the service: some run in our laboratory, some at your site, some both. Name the equipment and I will tell you which applies.", chips: SUGGESTIONS.slice(0, 2) };
+  if (/just looking|browsing|only looking/.test(t))
+    return { from: "bot", text: "No rush. Look around, and I will point things out as you go. Ask me whenever you like.", chips: SUGGESTIONS.slice(0, 2) };
   const more = services.find((s) => t.includes(`more about ${s.title.toLowerCase()}`));
   if (more)
     return { from: "bot", text: `${more.description} Available ${whereText(more)}.`, links: [["Start a quote", `/request-a-quote?service=${more.slug}`], ["All services", "/services"]], chips: [WHERE, TALK] };
@@ -94,4 +96,91 @@ export function nudgeFor(path: string, n: number): string {
   if (n > 0) return LATER[(n - 1) % LATER.length];
   if (path === "/") return HOME;
   return NUDGES.find(([p]) => path.startsWith(p))?.[1] ?? "Can I help you find the right service?";
+}
+
+/** What Kunna thinks aloud: a line, and optionally one place to go next. */
+export type Thought = { text: string; cta?: [label: string, href: string]; choices?: [label: string, question: string][] };
+
+const SECTION_THOUGHTS: Record<string, Thought[]> = {
+  hero: [{ text: "Calibration, testing, inspection. Tell me your equipment and I will pick the service.", cta: ["See all services", "/services"] }],
+  services: [
+    { text: "Not sure which of these fits? Name the instrument and I will match it.", cta: ["Browse services", "/services"] },
+    { text: "Each service lists its scope and standards. Open one to see if it covers your job." },
+  ],
+  industries: [{ text: "Which industry are you in? I can suggest the tests that usually apply.", cta: ["All industries", "/industries"] }],
+  labs: [{ text: "Our laboratories are where traceable results come from. Ask me what can be tested there.", cta: ["Laboratories", "/laboratories"] }],
+  calibration: [{ text: "Gauges, transmitters, thermocouples? Give me the instrument and I will point you on.", cta: ["Calibration services", "/services/calibration-services"] }],
+  certifications: [{ text: "Got a certificate reference? You can verify it on the certifications page.", cta: ["Verify a certificate", "/certifications#verify"] }],
+  projects: [{ text: "Have a look at jobs like yours. Describe yours and I will find the service.", cta: ["Projects", "/projects"] }],
+  testimonials: [{ text: "Reading what clients say? When you are ready, a quote takes a few minutes.", cta: ["Request a Quote", "/request-a-quote"] }],
+  assistant: [{ text: "That is me in the sample chat. Try one of the questions." }],
+  footer: [{ text: "Ready? Start a quote, or call the team.", cta: ["Request a Quote", "/request-a-quote"] }],
+};
+
+// Inner pages: one line per section in reading order, repeating if the page has more sections.
+const PAGE_THOUGHTS: [prefix: string, lines: Thought[]][] = [
+  ["/services/", [{ text: "Does this match your equipment? Ask me, or start a quote for it.", cta: ["Request a Quote", "/request-a-quote"] }, { text: "Check the standards listed here against your job spec." }]],
+  ["/services", [{ text: "Tell me the equipment and I will narrow these down." }, { text: "Some services run in the lab, some on site, some both. I can tell you which." }]],
+  ["/request-a-quote", [{ text: "Take it one step at a time. Your answers are kept as you go." }, { text: "Not sure which service? Ask me and come back." }]],
+  ["/certifications", [{ text: "Verifying a certificate? Have the reference ready." }, { text: "Questions about accreditation? Ask me." }]],
+  ["/laboratories", [{ text: "Wondering if your equipment can come to the lab? Ask me." }]],
+  ["/industries", [{ text: "Find your industry, then see which services usually go with it." }]],
+  ["/projects", [{ text: "Similar job in mind? Tell me about it and I will match a service." }]],
+  ["/about", [{ text: "The short version: we calibrate, test and inspect across the Kingdom." }]],
+  ["/contact", [{ text: "Want a quick answer first? Ask me before you write." }]],
+  ["/faq", [{ text: "Cannot find your answer here? Ask me." }]],
+  ["/careers", [{ text: "Curious about a role? I can point you to the open positions." }]],
+  ["/news", [{ text: "Looking for something specific? Ask me and I will point you." }]],
+];
+
+/**
+ * The thought for a section that has come into view, or null when she has nothing useful to add.
+ * `visit` counts earlier thoughts for the same section, so a second visit gets a different line.
+ */
+export function thoughtFor(key: string, heading: string | undefined, path: string, index: number, visit: number): Thought | null {
+  const own = SECTION_THOUGHTS[key];
+  if (own) return own[visit % own.length];
+  const page = PAGE_THOUGHTS.find(([p]) => path.startsWith(p))?.[1];
+  if (page) return page[index % page.length];
+  const h = heading?.trim();
+  return h && h.length <= 44 ? { text: `Reading about ${h.toLowerCase()}? Tell me what you are after and I will guide you.` } : null;
+}
+export const IDLE_LINE = "Still there? Tell me about your equipment and I will point you to a service.";
+export const EXIT_LINE = "Before you go: want a quote? It takes a few minutes.";
+export const FORM_ERROR = "Almost. Check the highlighted field.";
+export const FORM_DONE = "Sent. Thank you!";
+
+type Intro = { thought: Thought; mood: "happy" | "excited" | "celebrate" };
+const part = (h: number) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening");
+
+/**
+ * How Kunna introduces herself when a visitor arrives. Several styles, never the same one twice in a
+ * row for the same visitor: plain, time-aware, a question with quick answers, playful, and (for
+ * someone who has been here before) a welcome back. `last` is the id used last time.
+ */
+export function introFor(hour: number, returning: boolean, last: number): { id: number } & Intro {
+  const styles: [id: number, when: boolean, make: () => Intro][] = [
+    [0, !returning, () => ({ mood: "happy", thought: { text: "Hi, I am Kunna, SAFETAG's assistant. I live on this page and I know the services well." } })],
+    [1, !returning, () => ({ mood: "happy", thought: { text: `${part(hour)}! I am Kunna. Tell me what you need checked and I will find the right SAFETAG service.` } })],
+    [
+      2,
+      true,
+      () => ({
+        mood: "excited",
+        thought: {
+          text: "Hello! Kunna here. What brings you to SAFETAG today?",
+          choices: [["Calibration", "I need calibration"], ["Testing", "Tell me about NDT"], ["A certificate", "Verify a certificate"], ["Just looking", "Just looking"]],
+        },
+      }),
+    ],
+    [3, !returning, () => ({ mood: "celebrate", thought: { text: "Psst, over here! I am Kunna. Calibration, testing, inspection: ask me anything." } })],
+    [4, !returning, () => ({ mood: "happy", thought: { text: "I am Kunna, the SAFETAG shield with eyes. Describe your equipment and I will point you to the service." } })],
+    [5, returning, () => ({ mood: "excited", thought: { text: "Welcome back! Kunna here, still on duty.", cta: ["Start a quote", "/request-a-quote"] } })],
+    [6, returning, () => ({ mood: "happy", thought: { text: `${part(hour)} again! Pick up where you left off, or ask me something new.` } })],
+    [7, hour >= 21 || hour < 5, () => ({ mood: "happy", thought: { text: "Working late? I am Kunna. Ask away, I will keep you company." } })],
+  ];
+  const pool = styles.filter(([, when]) => when);
+  const fresh = pool.filter(([id]) => id !== last);
+  const [id, , make] = (fresh.length ? fresh : pool)[Math.floor(Math.random() * (fresh.length || pool.length))];
+  return { id, ...make() };
 }

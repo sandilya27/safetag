@@ -36,7 +36,7 @@ function useInquiry(kind: "contact" | "career", validate: (v: Record<string, str
 
 function Sent({ title, body, reference }: { title: string; body: string; reference: string }) {
   return (
-    <div role="status" className="flex flex-col items-start gap-4 py-6">
+    <div role="status" data-kunna-done className="flex flex-col items-start gap-4 py-6">
       <CheckCircle2 className="size-10 text-green-600" />
       <h3 className="display m-0 text-[28px] leading-[1.1] font-extrabold">{title}</h3>
       <p className="m-0 max-w-[48ch] text-[16px] leading-[1.6] text-grey-700">{body}</p>
