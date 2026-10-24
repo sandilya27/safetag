@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, IBM_Plex_Mono, IBM_Plex_Sans, Lato } from "next/font/google";
+import { Suspense } from "react";
 import { ChatProvider } from "@/components/chat-context";
 import { ChatWidget } from "@/components/chat-widget";
-import { MobileQuoteBar, SiteFooter } from "@/components/site-footer";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { JsonLd } from "@/components/ui";
 import { organizationLd, SITE_NAME, SITE_URL } from "@/lib/seo";
@@ -53,8 +54,9 @@ export default function RootLayout({
           <SiteHeader />
           {children}
           <SiteFooter />
-          <MobileQuoteBar />
-          <ChatWidget />
+          <Suspense fallback={null}>
+            <ChatWidget />
+          </Suspense>
         </ChatProvider>
       </body>
     </html>

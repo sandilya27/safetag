@@ -19,7 +19,7 @@ export function Hero() {
     <section
       id="hero"
       data-screen-label="01 Hero"
-      className={`relative z-1 box-border flex min-h-screen items-center pt-30 pb-18 docked:min-h-0 docked:items-start docked:pt-7 docked:pb-16 ${padX}`}
+      className={`relative z-1 box-border flex min-h-svh items-center pt-30 pb-18 docked:min-h-0 docked:items-start docked:pt-7 docked:pb-16 ${padX}`}
     >
       <div className="mx-auto flex w-full max-w-[1280px] flex-wrap items-center gap-12">
         <div className="flex max-w-[600px] flex-[1_1_440px] flex-col gap-7 docked:gap-5">
@@ -199,7 +199,7 @@ export function Labs() {
 export function Calibration() {
   return (
     <section id="calibration" data-screen-label="04b Calibration" className={`relative z-1 h-auto pinned:h-[200vh] ${dockedAnchor}`}>
-      <div className={`relative top-0 box-border flex min-h-screen items-center py-24 pinned:sticky docked:min-h-0 docked:items-start docked:pt-14 docked:pb-10 ${padX}`}>
+      <div className={`relative top-0 box-border flex min-h-svh items-center py-24 pinned:sticky docked:min-h-0 docked:items-start docked:pt-14 docked:pb-10 ${padX}`}>
         <div className="mx-auto grid w-full max-w-[1280px] grid-cols-12 gap-6">
           <div className="col-span-full flex flex-col gap-[22px] pinned:col-[1/span_5] docked:mx-auto docked:w-full docked:max-w-[640px]">
             <div className="eyebrow">Calibration &amp; metrology</div>
@@ -305,7 +305,7 @@ export function AssistantQuote() {
     <section id="assistant" data-screen-label="08 Assistant + Quote" className={`bg-paper py-30 max-md:py-20 ${padX}`}>
       <div className="mx-auto grid max-w-[1280px] grid-cols-[repeat(auto-fit,minmax(min(340px,100%),1fr))] gap-6">
         <div className="flex flex-col gap-5 rounded-md border border-grey-200 bg-white p-[clamp(24px,3vw,40px)]">
-          <div className="eyebrow">08 · SAFETAG assistant</div>
+          <div className="eyebrow">08 · Kunna, SAFETAG assistant</div>
           <h2 className="display m-0 text-[clamp(28px,2.8vw,40px)] leading-[1.05] font-extrabold text-balance">Ask about a service, a standard or a certificate.</h2>
           <div className="flex flex-col gap-2.5 rounded-md bg-grey-50 p-4">
             <div className="max-w-[80%] self-end rounded-[12px_12px_2px_12px] bg-ink px-3.5 py-2.5 text-[14.5px] leading-[1.45] text-white">

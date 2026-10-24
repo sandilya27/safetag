@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Phone } from "lucide-react";
 import { contact } from "@/lib/content";
 
-export const padX = "px-[clamp(20px,4vw,48px)]";
+export const padX = "pl-[max(clamp(20px,4vw,48px),env(safe-area-inset-left))] pr-[max(clamp(20px,4vw,48px),env(safe-area-inset-right))]";
 export const container = "mx-auto w-full max-w-[1280px]";
 export const h2 = "display m-0 text-[clamp(32px,3.6vw,52px)] leading-[1.02] font-extrabold tracking-[-.01em] text-balance";
 export const h3 = "display-92 m-0 text-[clamp(22px,2vw,28px)] leading-[1.12] font-bold text-balance";

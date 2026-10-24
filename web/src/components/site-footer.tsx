@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Facebook, Instagram, Linkedin, Phone, Twitter } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 import { companyLinks, contact, serviceHref, services } from "@/lib/content";
 import { Logo } from "./logo";
 
@@ -15,7 +15,7 @@ const footLink = "text-[14.5px] text-grey-100 no-underline hover:text-green-500"
 
 export function SiteFooter() {
   return (
-    <footer id="footer" data-screen-label="09 Footer" data-surface="inverse" className="bg-ink px-[clamp(20px,4vw,48px)] pt-20 pb-30 text-white md:pb-10">
+    <footer id="footer" data-screen-label="09 Footer" data-surface="inverse" className="pl-[max(clamp(20px,4vw,48px),env(safe-area-inset-left))] pr-[max(clamp(20px,4vw,48px),env(safe-area-inset-right))] bg-ink pt-20 pb-[calc(2.5rem+env(safe-area-inset-bottom))] text-white">
       <div className="mx-auto flex max-w-[1280px] flex-col gap-14">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-10">
           <div className="col-span-full flex min-w-0 flex-col gap-[18px] sm:col-span-2">
@@ -76,19 +76,5 @@ export function SiteFooter() {
         </div>
       </div>
     </footer>
-  );
-}
-
-/** Sticky call + quote bar on phones (< 768px). Hidden on the quote page (see globals.css). */
-export function MobileQuoteBar() {
-  return (
-    <div className="mobile-quote-bar fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-grey-200 bg-white px-4 pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom))] md:hidden">
-      <a href={contact.phoneHref} aria-label="Call SAFETAG" className="box-border flex size-12 flex-none items-center justify-center rounded border-[1.5px] border-ink">
-        <Phone className="size-5 text-ink" />
-      </a>
-      <Link href="/request-a-quote" className="flex h-12 flex-1 items-center justify-center rounded bg-green-500 text-base font-semibold text-ink no-underline hover:text-ink">
-        Request a Quote
-      </Link>
-    </div>
   );
 }

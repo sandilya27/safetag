@@ -81,7 +81,7 @@ export function SiteHeader() {
         if (e.key === "Escape") closeAll();
       }}
     >
-      <div className="mx-auto flex h-18 max-w-[1360px] items-center gap-3 px-[clamp(20px,3vw,40px)] sm:gap-8">
+      <div className="mx-auto flex h-18 max-w-[1360px] items-center gap-3 pl-[max(clamp(20px,3vw,40px),env(safe-area-inset-left))] pr-[max(clamp(20px,3vw,40px),env(safe-area-inset-right))] sm:gap-8">
         <Link href="/" aria-label="SAFETAG home" className="flex flex-none" onClick={closeAll}>
           <Logo className="h-[38px] w-auto" />
         </Link>
@@ -110,7 +110,7 @@ export function SiteHeader() {
             onClick={closeAll}
             className="flex h-11 items-center gap-2 rounded bg-green-500 px-3.5 text-[15px] font-semibold whitespace-nowrap text-ink no-underline transition-colors duration-150 hover:bg-green-600 hover:text-ink active:bg-green-650 sm:px-[18px]"
           >
-            Request a Quote
+            <span><span className="max-[359px]:hidden">Request a </span>Quote</span>
           </Link>
           <button
             type="button"
@@ -127,7 +127,7 @@ export function SiteHeader() {
 
       {mega && (
         <div id="mega" className="hidden border-t border-grey-200 bg-white shadow-[0_8px_24px_rgb(11_15_14/.12)] min-[1180px]:block">
-          <div className="mx-auto grid max-w-[1360px] grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.1fr)] gap-8 px-[clamp(20px,3vw,40px)] pt-8 pb-9">
+          <div className="mx-auto grid max-w-[1360px] grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.1fr)] gap-8 pl-[max(clamp(20px,3vw,40px),env(safe-area-inset-left))] pr-[max(clamp(20px,3vw,40px),env(safe-area-inset-right))] pt-8 pb-9">
             {megaGroups.map((g) => (
               <div key={g.title} className="flex flex-col gap-1.5">
                 <div className="label-mono px-2.5 pb-2 uppercase">{g.title}</div>
@@ -156,7 +156,7 @@ export function SiteHeader() {
                   }}
                   className="h-11 cursor-pointer rounded border-[1.5px] border-white bg-transparent px-4 text-sm font-semibold text-white hover:bg-grey-800"
                 >
-                  Ask the assistant
+                  Ask Kunna
                 </button>
                 <Link href="/services" onClick={closeAll} className="flex h-11 items-center rounded bg-green-500 px-4 text-sm font-semibold text-ink no-underline hover:bg-green-400 hover:text-ink">
                   All services
@@ -168,7 +168,7 @@ export function SiteHeader() {
       )}
 
       {nav && (
-        <div id="drawer" className="fixed inset-x-0 top-18 bottom-0 flex flex-col overflow-auto overscroll-contain bg-white px-5 pt-4 pb-30 min-[1180px]:hidden">
+        <div id="drawer" className="fixed inset-x-0 top-18 bottom-0 flex flex-col overflow-auto overscroll-contain bg-white pt-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pl-[max(20px,env(safe-area-inset-left))] pr-[max(20px,env(safe-area-inset-right))] min-[1180px]:hidden">
           <div className="label-mono py-3">SERVICES</div>
           {services.map((s) => (
             <Link key={s.title} href={serviceHref(s)} onClick={closeAll} className="flex min-h-12 items-center gap-3 border-b border-grey-100 text-base font-medium text-ink no-underline">
